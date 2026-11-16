@@ -6,3 +6,6 @@ __pycache__/
 .DS_Store
 dist/
 build/
+
+# Comprovantes PIX e pedidos de compra: dados bancarios, ficam fora do git
+CAIXA-MACHADO/operacoes/

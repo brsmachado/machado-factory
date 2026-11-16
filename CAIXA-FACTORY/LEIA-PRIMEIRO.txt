@@ -1,0 +1,16 @@
+CAIXA FACTORY — pacote completo
+Gerado em 16/11/2026
+
+CAIXA-FACTORY/
+  caixa-factory-docs.html   a documentacao inteira numa pagina so (abra no navegador)
+  docs/                     os 9 documentos em markdown, para virar repositorio
+  docs/seed/                os dados reais de 19/10/2026 para carga inicial
+
+CAIXA-MACHADO/
+  sistema/caixa-machado.html   o sistema em uso hoje (abra no navegador, funciona offline)
+  operacoes/AAAA-MM/           pedidos e comprovantes de cada compra
+  registros/                   operacoes.csv e movimentos.csv
+  LEIA-ME.md                   como a pasta esta organizada
+  PENDENTES.md                 o que esta em aberto
+
+Por onde comecar: abra CAIXA-FACTORY/caixa-factory-docs.html.

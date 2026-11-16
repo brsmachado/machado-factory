@@ -1,0 +1,222 @@
+{
+  "gerado_em": "2026-10-19",
+  "observacao": "Estado real do Caixa Machado em 19/10/2026, para carga inicial e testes.",
+  "fornecedores": [
+    {
+      "id": 1,
+      "nome": "Brislu Plásticos"
+    },
+    {
+      "id": 2,
+      "nome": "SB Indústria e Comércio de Papel"
+    }
+  ],
+  "movimentos_caixa": [
+    {
+      "id": 1,
+      "tipo": "aporte",
+      "data": "2026-08-28",
+      "valor": "100000.00",
+      "observacoes": "Aporte inicial"
+    },
+    {
+      "id": 2,
+      "tipo": "aporte",
+      "data": "2026-09-16",
+      "valor": "50000.00",
+      "observacoes": "Aporte para as compras da Brislu de setembro"
+    }
+  ],
+  "operacoes": [
+    {
+      "id": 1,
+      "fornecedor_id": 1,
+      "numero_pedido": "PC 03282-2/26",
+      "numero_nf": "",
+      "data_pedido": null,
+      "data_pagamento": "2026-08-27",
+      "valor_pago": "63321.60",
+      "valor_cheio": "65280.00",
+      "situacao": "confirmada",
+      "origem": "importacao",
+      "observacoes": "NFe 5783 · condição 30/40 · 3% à vista"
+    },
+    {
+      "id": 2,
+      "fornecedor_id": 1,
+      "numero_pedido": "PC 03282-4/26",
+      "numero_nf": "",
+      "data_pedido": null,
+      "data_pagamento": "2026-08-28",
+      "valor_pago": "7915.20",
+      "valor_cheio": "8160.00",
+      "situacao": "confirmada",
+      "origem": "importacao",
+      "observacoes": "Condição 30/40 · 3% à vista"
+    },
+    {
+      "id": 3,
+      "fornecedor_id": 2,
+      "numero_pedido": "PC 03273-0/26",
+      "numero_nf": "12806",
+      "data_pedido": null,
+      "data_pagamento": "2026-09-04",
+      "valor_pago": "9336.00",
+      "valor_cheio": "9725.00",
+      "situacao": "confirmada",
+      "origem": "importacao",
+      "observacoes": "Papel acoplado mono 32×37 · 250 un · parcela única · desconto de 4%"
+    },
+    {
+      "id": 4,
+      "fornecedor_id": 1,
+      "numero_pedido": "PC 03295-5/26",
+      "numero_nf": "5845",
+      "data_pedido": null,
+      "data_pagamento": "2026-09-16",
+      "valor_pago": "24864.00",
+      "valor_cheio": "25951.80",
+      "situacao": "confirmada",
+      "origem": "importacao",
+      "observacoes": "Bobina fundo estrela G/M · condição 30/40"
+    },
+    {
+      "id": 5,
+      "fornecedor_id": 1,
+      "numero_pedido": "PC 03331-1/26",
+      "numero_nf": "5839",
+      "data_pedido": null,
+      "data_pagamento": "2026-09-16",
+      "valor_pago": "32313.60",
+      "valor_cheio": "33727.32",
+      "situacao": "confirmada",
+      "origem": "importacao",
+      "observacoes": "Bobina fundo estrela M/G/XG · 6 itens · condição 30/40"
+    },
+    {
+      "id": 6,
+      "fornecedor_id": 2,
+      "numero_pedido": "PC 03273-1/26",
+      "numero_nf": "12843",
+      "data_pedido": null,
+      "data_pagamento": "2026-09-24",
+      "valor_pago": "9336.00",
+      "valor_cheio": "9725.00",
+      "situacao": "confirmada",
+      "origem": "importacao",
+      "observacoes": "Papel acoplado mono 32×37 · 250 un · desconto lançado na nota pelo fornecedor · 30 dias"
+    },
+    {
+      "id": 7,
+      "fornecedor_id": 2,
+      "numero_pedido": "PC 03273-2/26",
+      "numero_nf": "12893",
+      "data_pedido": null,
+      "data_pagamento": "2026-10-19",
+      "valor_pago": "4107.84",
+      "valor_cheio": "4279.00",
+      "situacao": "confirmada",
+      "origem": "importacao",
+      "observacoes": "Papel acoplado mono 32×37 · 110 un · pedido em 16/10, pago em 19/10 · 30 dias"
+    }
+  ],
+  "duplicatas": [
+    {
+      "id": 1,
+      "operacao_id": 1,
+      "sequencia": 1,
+      "valor": "32640.00",
+      "vencimento": "2026-09-26",
+      "recebida_em": "2026-09-26"
+    },
+    {
+      "id": 2,
+      "operacao_id": 1,
+      "sequencia": 2,
+      "valor": "32640.00",
+      "vencimento": "2026-10-06",
+      "recebida_em": "2026-10-06"
+    },
+    {
+      "id": 3,
+      "operacao_id": 2,
+      "sequencia": 1,
+      "valor": "4080.00",
+      "vencimento": "2026-09-27",
+      "recebida_em": "2026-09-27"
+    },
+    {
+      "id": 4,
+      "operacao_id": 2,
+      "sequencia": 2,
+      "valor": "4080.00",
+      "vencimento": "2026-10-07",
+      "recebida_em": "2026-10-07"
+    },
+    {
+      "id": 5,
+      "operacao_id": 3,
+      "sequencia": 1,
+      "valor": "9725.00",
+      "vencimento": "2026-10-06",
+      "recebida_em": "2026-10-06"
+    },
+    {
+      "id": 6,
+      "operacao_id": 4,
+      "sequencia": 1,
+      "valor": "12975.90",
+      "vencimento": "2026-10-16",
+      "recebida_em": "2026-10-16"
+    },
+    {
+      "id": 7,
+      "operacao_id": 4,
+      "sequencia": 2,
+      "valor": "12975.90",
+      "vencimento": "2026-10-26",
+      "recebida_em": null
+    },
+    {
+      "id": 8,
+      "operacao_id": 5,
+      "sequencia": 1,
+      "valor": "16863.66",
+      "vencimento": "2026-10-16",
+      "recebida_em": "2026-10-16"
+    },
+    {
+      "id": 9,
+      "operacao_id": 5,
+      "sequencia": 2,
+      "valor": "16863.66",
+      "vencimento": "2026-10-26",
+      "recebida_em": null
+    },
+    {
+      "id": 10,
+      "operacao_id": 6,
+      "sequencia": 1,
+      "valor": "9725.00",
+      "vencimento": "2026-10-24",
+      "recebida_em": null
+    },
+    {
+      "id": 11,
+      "operacao_id": 7,
+      "sequencia": 1,
+      "valor": "4279.00",
+      "vencimento": "2026-11-15",
+      "recebida_em": null
+    }
+  ],
+  "conferencia": {
+    "caixa": "111810.32",
+    "aplicado": "42032.64",
+    "capital": "153842.96",
+    "a_receber": "43843.56",
+    "lucro_realizado": "3842.96",
+    "lucro_a_receber": "1810.92",
+    "identidade": "caixa + aplicado == aportes - retiradas + lucro_realizado"
+  }
+}
