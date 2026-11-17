@@ -9,3 +9,9 @@ build/
 
 # Comprovantes PIX e pedidos de compra: dados bancarios, ficam fora do git
 CAIXA-MACHADO/operacoes/
+
+# Python / testes
+.pytest_cache/
+venv/
+.venv/
+documentos/

@@ -11,6 +11,7 @@ banco/
     003_auditoria.sql          log automático em evento (só cresce)
     004_views.sql              v_operacao, v_caixa, v_carteira, v_agenda
     005_resultado_mensal.sql   resultado_mes() e resultado_mensal() — competência
+    006_api.sql                sessões de login, Idempotency-Key, sequência deferrable
   aplicar.sh                   aplica as migrações que faltam
   carregar_seed.py             carga inicial a partir de docs/seed/*.json
   testes/
