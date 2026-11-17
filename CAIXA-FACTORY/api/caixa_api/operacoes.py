@@ -235,7 +235,7 @@ def _ordenar(dups: list[dict]) -> list[dict]:
 
 # --- escrita ---------------------------------------------------------------
 
-def criar(cur, arqs: Arquivos, dados: OperacaoNova) -> int:
+def criar(cur, arqs: Arquivos, dados: OperacaoNova, origem: str = "manual") -> int:
     _fornecedor_ativo(cur, dados.fornecedor_id)                              # 1
     _valores(dados.valor_pago, dados.valor_cheio)                            # 2, 3
     dups = [d.model_dump() for d in dados.duplicatas]
@@ -245,12 +245,12 @@ def criar(cur, arqs: Arquivos, dados: OperacaoNova) -> int:
     cur.execute(
         """insert into operacao (fornecedor_id, numero_pedido, numero_nf, data_pedido, data_pagamento,
                                  valor_pago, valor_cheio, observacoes, situacao, origem, criado_por)
-           values (%s, %s, %s, %s, %s, %s, %s, %s, 'confirmada', 'manual',
+           values (%s, %s, %s, %s, %s, %s, %s, %s, 'confirmada', %s,
                    nullif(current_setting('caixa.usuario_id', true), '')::bigint)
            returning id""",
         (dados.fornecedor_id, dados.numero_pedido.strip(), (dados.numero_nf or "").strip() or None,
          dados.data_pedido, dados.data_pagamento, dados.valor_pago, dados.valor_cheio,
-         dados.observacoes))
+         dados.observacoes, origem))
     op_id = cur.fetchone()["id"]
     for seq, d in enumerate(_ordenar(dups), 1):
         cur.execute("insert into duplicata (operacao_id, sequencia, valor, vencimento) values (%s, %s, %s, %s)",

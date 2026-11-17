@@ -92,8 +92,14 @@ DATABASE_URL=postgresql://caixa:SENHA@localhost/caixa_factory
 SECRET_KEY=<openssl rand -hex 32>
 DOCUMENTOS_DIR=/opt/caixa-factory/documentos
 TZ=America/Sao_Paulo
+# do @BotFather
 TELEGRAM_BOT_TOKEN=
+# o seu chat com o robô (ele ignora qualquer outro)
 TELEGRAM_CHAT_ID=
+# seu usuário no sistema: os cliques no Telegram agem como você
+TELEGRAM_USUARIO_EMAIL=
+# leitura das fotos de pedido e comprovante (Claude)
+ANTHROPIC_API_KEY=
 ROBO_TOKEN=<openssl rand -hex 32>
 ```
 
@@ -210,13 +216,54 @@ A Hostinger oferece snapshot da VPS no painel — use **junto**, não no lugar: 
 snapshot salva a máquina, o `pg_dump` salva os dados num formato que você
 consegue abrir em qualquer lugar.
 
-## 7. Os robôs no cron
+## 7. O robô
+
+Um robô só, em dois pedaços: o serviço que conversa no Telegram e o aviso das
+9h no cron.
+
+```bash
+cd /opt/caixa-factory/app && set -a && . ../.env && set +a
+../venv/bin/python -m caixa_api.cli criar-robo        # usuário do robô, papel operador
+../venv/bin/python -m caixa_api.robo aviso --mostrar  # confere o texto sem mandar
+```
+
+Para achar o `TELEGRAM_CHAT_ID`: mande qualquer mensagem para o robô e abra
+`https://api.telegram.org/bot<TOKEN>/getUpdates` — o número está em
+`message.chat.id`.
+
+`/etc/systemd/system/caixa-robo.service`:
+
+```ini
+[Unit]
+Description=Caixa Factory — robô do Telegram
+After=network-online.target postgresql.service
+
+[Service]
+User=caixa
+WorkingDirectory=/opt/caixa-factory/app
+EnvironmentFile=/opt/caixa-factory/.env
+ExecStart=/opt/caixa-factory/venv/bin/python -m caixa_api.robo telegram
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/caixa-factory/documentos
+
+[Install]
+WantedBy=multi-user.target
+```
+
+O robô usa long polling: não precisa de webhook nem de porta aberta.
 
 ```cron
 # crontab do usuário caixa — fuso da VPS em America/Sao_Paulo
-0 9 * * 1-5  curl -sS -X POST https://caixa.machadoemb.com.br/api/v1/robo/conciliacao \
-               -H "Authorization: Bearer $ROBO_TOKEN"
+0 9 * * 1-5  cd /opt/caixa-factory/app && set -a && . ../.env && set +a && \
+             ../venv/bin/python -m caixa_api.robo aviso >> /var/log/caixa-robo.log 2>&1
 ```
+
+Num dia sem vencimento, atraso, dinheiro parado nem rascunho esperando, o aviso
+não manda nada. `/aviso` no Telegram manda na hora.
 
 Confirme o fuso da máquina antes:
 
@@ -250,4 +297,5 @@ ela quebrar, os números estão errados e isso precisa acordar alguém.
 - [ ] Backup rodando e **uma restauração testada**
 - [ ] Fuso da VPS em America/Sao_Paulo
 - [ ] Token do robô diferente do token de usuário
+- [ ] `caixa-robo` ativo e respondendo `/resumo` no Telegram
 - [ ] Artefato antigo com o aviso de substituição, mas ainda no ar

@@ -79,10 +79,64 @@ def docs_dir(tmp_path):
     return tmp_path / "documentos"
 
 
+class LeitorFalso:
+    """Faz o papel do Claude: cada arquivo de teste tem a leitura combinada antes."""
+
+    def __init__(self):
+        self.leituras: dict[bytes, dict] = {}
+        self.chamadas = 0
+
+    def arquivo(self, bruto: dict) -> bytes:
+        """Registra o que o 'Claude' vai ler e devolve um PNG único para enviar."""
+        from caixa_api.robo.extracao import normalizar
+        conteudo = b"\x89PNG\r\n\x1a\n" + uuid.uuid4().bytes
+        self.leituras[conteudo] = normalizar(bruto)
+        return conteudo
+
+    def extrair(self, conteudo: bytes, mime: str) -> dict:
+        self.chamadas += 1
+        return self.leituras[conteudo]
+
+
+class TelegramFalso:
+    def __init__(self):
+        self.enviadas: list[dict] = []
+        self.editadas: list[dict] = []
+        self.cliques: list[str] = []
+        self.arquivos: dict[str, bytes] = {}
+
+    def enviar(self, chat_id, texto, botoes=None):
+        self.enviadas.append({"chat_id": str(chat_id), "texto": texto, "botoes": botoes or []})
+        return len(self.enviadas)
+
+    def editar(self, chat_id, message_id, texto, botoes=None):
+        self.editadas.append({"message_id": message_id, "texto": texto, "botoes": botoes or []})
+
+    def responder_clique(self, callback_id, texto=""):
+        self.cliques.append(texto)
+
+    def baixar(self, file_id, limite):
+        return self.arquivos[file_id]
+
+
+CHAT_DONO = "4242"
+
+
 @pytest.fixture
-def app(banco, docs_dir):
-    cfg = Config(database_url=_url(banco), documentos_dir=docs_dir, robo_token=ROBO_TOKEN)
-    return criar_app(cfg)
+def leitor():
+    return LeitorFalso()
+
+
+@pytest.fixture
+def telegram():
+    return TelegramFalso()
+
+
+@pytest.fixture
+def app(banco, docs_dir, leitor, telegram):
+    cfg = Config(database_url=_url(banco), documentos_dir=docs_dir, robo_token=ROBO_TOKEN,
+                 telegram_chat_id=CHAT_DONO, telegram_usuario_email="admin@teste.invalid")
+    return criar_app(cfg, extrator=leitor, telegram=telegram)
 
 
 class Cliente:

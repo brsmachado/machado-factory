@@ -8,12 +8,15 @@ from fastapi import APIRouter, FastAPI
 from . import erros
 from .config import Config
 from .db import Banco, criar_pool
-from .rotas import documentos, duplicatas, exportar, fornecedores, movimentos, operacoes, paineis, sistema
+from .robo import criar_robo
+from .rotas import (documentos, duplicatas, exportar, fornecedores, movimentos, operacoes, paineis,
+                    robo, sistema)
 
 PREFIXO = "/api/v1"
 
 
-def criar_app(cfg: Optional[Config] = None) -> FastAPI:
+def criar_app(cfg: Optional[Config] = None, extrator=None, telegram=None) -> FastAPI:
+    """`extrator` e `telegram` só são passados nos testes; em produção vêm do .env."""
     cfg = cfg or Config.do_ambiente()
 
     @asynccontextmanager
@@ -21,6 +24,7 @@ def criar_app(cfg: Optional[Config] = None) -> FastAPI:
         cfg.documentos_dir.mkdir(parents=True, exist_ok=True)
         pool = criar_pool(cfg.database_url, cfg.fuso)
         app.state.banco = Banco(pool)
+        app.state.robo = criar_robo(app.state.banco, cfg, extrator, telegram)
         try:
             yield
         finally:
@@ -33,7 +37,7 @@ def criar_app(cfg: Optional[Config] = None) -> FastAPI:
     erros.instalar(app)
 
     api = APIRouter(prefix=PREFIXO)
-    for m in (sistema, paineis, operacoes, duplicatas, movimentos, fornecedores, documentos, exportar):
+    for m in (sistema, paineis, operacoes, duplicatas, movimentos, fornecedores, documentos, exportar, robo):
         api.include_router(m.r)
     app.include_router(api)
     return app

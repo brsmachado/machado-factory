@@ -1,5 +1,4 @@
 """docs/04-api.md §7 — documentos (pedidos e comprovantes)."""
-import hashlib
 from datetime import date
 from typing import Literal, Optional
 
@@ -8,7 +7,7 @@ from fastapi.responses import FileResponse
 
 from .. import fmt
 from ..auth import Usuario, pode_lancar, pode_ler
-from ..documentos import Arquivos, detectar, nome_arquivo
+from ..documentos import Arquivos, salvar
 from ..erros import ErroAPI
 from ..escrita import executar
 
@@ -35,33 +34,9 @@ def enviar(request: Request,
         raise ErroAPI("validacao", f"Arquivo maior que {limite // (1024 * 1024)} MB")
     if not conteudo:
         raise ErroAPI("validacao", "Arquivo vazio")
-    tipo_real = detectar(conteudo)       # pelo conteúdo, não pela extensão
-    if not tipo_real:
-        raise ErroAPI("validacao", "Tipo de arquivo não aceito: envie PDF, PNG, JPG, WEBP ou HEIC")
-    ext, mime = tipo_real
-    sha = hashlib.sha256(conteudo).hexdigest()
-
     def fn(cur, arqs):
-        cur.execute("select * from documento where sha256 = %s", (sha,))
-        existente = cur.fetchone()
-        if existente:
-            # mesmo arquivo de novo: devolve o que já existe, sem duplicar
-            return 200, _json(existente)
-        numero_pedido = None
-        if operacao_id is not None:
-            cur.execute("select numero_pedido from operacao where id = %s", (operacao_id,))
-            o = cur.fetchone()
-            if not o:
-                raise ErroAPI("validacao", f"Operação {operacao_id} não existe")
-            numero_pedido = o["numero_pedido"]
-        cur.execute("select current_date as hoje")
-        dia = data_doc or cur.fetchone()["hoje"]
-        caminho = arqs.livre(dia, nome_arquivo(dia, numero_pedido, tipo, ext))
-        arqs.gravar(caminho, conteudo)
-        cur.execute("""insert into documento (operacao_id, tipo, nome_arquivo, caminho, mime, bytes, sha256, data_doc)
-                       values (%s, %s, %s, %s, %s, %s, %s, %s) returning *""",
-                    (operacao_id, tipo, caminho.rsplit("/", 1)[-1], caminho, mime, len(conteudo), sha, data_doc))
-        return 201, _json(cur.fetchone())
+        novo, d = salvar(cur, arqs, conteudo, tipo, operacao_id=operacao_id, data_doc=data_doc)
+        return (201 if novo else 200), _json(d)   # mesmo arquivo de novo: o que já existe
 
     return executar(request, u, "POST /documentos", fn, status=201)
 

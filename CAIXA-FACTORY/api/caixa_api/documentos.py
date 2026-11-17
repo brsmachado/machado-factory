@@ -137,3 +137,37 @@ def vincular(cur, arqs: Arquivos, operacao_id: int, numero_pedido: str, ids: lis
             arqs.renomear(d["caminho"], novo)
         cur.execute("update documento set operacao_id = %s, nome_arquivo = %s, caminho = %s where id = %s",
                     (operacao_id, novo.rsplit("/", 1)[-1], novo, d["id"]))
+
+
+def salvar(cur, arqs: Arquivos, conteudo: bytes, tipo: str, *, operacao_id: Optional[int] = None,
+           rascunho_id: Optional[int] = None, data_doc: Optional[date] = None,
+           numero_pedido: Optional[str] = None) -> tuple[bool, dict]:
+    """Grava o arquivo e a linha em documento. Devolve (novo, linha).
+
+    Mesmo sha256 já guardado: devolve o existente (novo=False) sem gravar nada.
+    O tipo real vem dos primeiros bytes; extensão e nome enviados não importam.
+    """
+    import hashlib
+    tipo_real = detectar(conteudo)
+    if not tipo_real:
+        raise ErroAPI("validacao", "Tipo de arquivo não aceito: envie PDF, PNG, JPG, WEBP ou HEIC")
+    ext, mime = tipo_real
+    sha = hashlib.sha256(conteudo).hexdigest()
+    cur.execute("select * from documento where sha256 = %s", (sha,))
+    existente = cur.fetchone()
+    if existente:
+        return False, existente
+    if operacao_id is not None and numero_pedido is None:
+        cur.execute("select numero_pedido from operacao where id = %s", (operacao_id,))
+        o = cur.fetchone()
+        if not o:
+            raise ErroAPI("validacao", f"Operação {operacao_id} não existe")
+        numero_pedido = o["numero_pedido"]
+    cur.execute("select current_date as hoje")
+    dia = data_doc or cur.fetchone()["hoje"]
+    caminho = arqs.livre(dia, nome_arquivo(dia, numero_pedido, tipo, ext))
+    arqs.gravar(caminho, conteudo)
+    cur.execute("""insert into documento (operacao_id, rascunho_id, tipo, nome_arquivo, caminho, mime, bytes, sha256, data_doc)
+                   values (%s, %s, %s, %s, %s, %s, %s, %s, %s) returning *""",
+                (operacao_id, rascunho_id, tipo, caminho.rsplit("/", 1)[-1], caminho, mime, len(conteudo), sha, data_doc))
+    return True, cur.fetchone()

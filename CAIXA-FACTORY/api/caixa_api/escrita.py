@@ -10,6 +10,20 @@ from .auth import Usuario
 from .documentos import Arquivos
 
 
+def rodar(banco, docs_dir, usuario_id: int, fn: Callable[[Any, Arquivos], Any]):
+    """Transação com quem agiu, lock de dinheiro e arquivos que acompanham o
+    commit — sem HTTP (o robô do Telegram usa isto direto)."""
+    arqs = Arquivos(docs_dir)
+    try:
+        with banco.transacao(usuario_id, dinheiro=True) as cur:
+            resultado = fn(cur, arqs)
+    except BaseException:
+        arqs.desfazer()
+        raise
+    arqs.confirmar()
+    return resultado
+
+
 def executar(request: Request, u: Usuario, rota: str, fn: Callable[[Any, Arquivos], Any],
              status: int = 200, idempotente: bool = False) -> Response:
     app = request.app

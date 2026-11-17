@@ -1,8 +1,16 @@
-# 06 — Os robôs
+# 06 — O robô
 
-Três rotinas automáticas. A regra que vale para as três está no
+> **Decisão de 17/11/2026: um robô só, no Telegram.** O Caixa Factory é um
+> controle de uma pessoa só, então as três rotinas abaixo viraram um único robô
+> que conversa com o dono no Telegram: ele lê as fotos de pedido e comprovante
+> (Robô 1), e todo dia útil às 9h manda uma mensagem só com os vencimentos e o
+> alerta de dinheiro parado (Robôs 2 e 3). As seções abaixo continuam valendo
+> como regra de cada parte. Implementação: `api/caixa_api/robo/`.
+
+A regra que vale para tudo está no
 [README](README.md#cinco-princípios-que-não-se-negociam): **o robô nunca grava
-uma operação financeira sozinho**. Ele propõe; uma pessoa confirma.
+uma operação financeira sozinho**. Ele propõe; o dono confirma — na API ou
+num clique no Telegram.
 
 ---
 

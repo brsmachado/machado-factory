@@ -1,7 +1,8 @@
 # API — Caixa Factory
 
 FastAPI + psycopg 3, SQL direto sobre as views do banco (sem ORM). Implementa
-[docs/04-api.md](../docs/04-api.md) §1 a §8 e §10. Base: `/api/v1`.
+[docs/04-api.md](../docs/04-api.md) inteira, mais o robô de
+[docs/06-robo.md](../docs/06-robo.md). Base: `/api/v1`.
 Documentação interativa em `/api/v1/docs`.
 
 ```
@@ -19,6 +20,12 @@ api/
     operacoes.py          validações do lançamento, edição, estorno
     documentos.py         nome dos arquivos, tipo real, renomear junto com a transação
     cli.py                criar usuário, trocar senha, criar usuário do robô
+    robo/                 o robô (um só, no Telegram)
+      extracao.py         leitura de pedido e comprovante com o Claude (saída estruturada)
+      rascunhos.py        casar pedido com PIX (A-04), conferências C1..C8, corrigir, aprovar
+      aviso.py            aviso das 9h: vencimentos + dinheiro parado (sem repetir todo dia)
+      telegram.py         o bot: fotos, botões, comandos; só fala com o seu chat
+      servico.py          o que o robô faz, usado pela API e pelo Telegram
     rotas/                um arquivo por seção da especificação
   testes/                 pytest contra PostgreSQL de verdade
 ```
@@ -46,10 +53,12 @@ PGHOST=localhost PGUSER=postgres venv/bin/python -m pytest testes
 ```
 
 Cria um banco-modelo com as migrações, a carga real de 19/10/2026 e quatro
-usuários; cada teste roda numa cópia nova dele. 55 testes: os números de
+usuários; cada teste roda numa cópia nova dele. 75 testes: os números de
 conferência pela API, cada validação na ordem da especificação, idempotência,
 recebimento em lote (tudo ou nada), documentos (nome, tipo real, duplicado,
-renomear e desfazer), CSV contra a planilha atual, login e permissões.
+renomear e desfazer), CSV contra a planilha atual, login e permissões, e o
+robô com os casos reais (A-01 da SB, A-02, A-04 das duas compras da Brislu, o
+aviso de 26/10) usando um leitor e um Telegram falsos — sem rede.
 
 ## Papéis
 
@@ -58,7 +67,7 @@ renomear e desfazer), CSV contra a planilha atual, login e permissões.
 | `leitura` | só GET |
 | `operador` | lançar, editar, receber, estornar, movimentar caixa, fornecedores, documentos |
 | `admin` | o mesmo que operador (usuários e parâmetros são pela linha de comando, por ora) |
-| robô (`ROBO_TOKEN`) | só leitura. Não grava operação, não recebe, não estorna. Os endpoints `/robo/*` ainda não existem |
+| robô (`ROBO_TOKEN`) | ler, mandar documentos (`/robo/ingestao`) e disparar o aviso (`/robo/conciliacao`). Não aprova rascunho, não grava operação, não recebe, não estorna |
 
 Login: `POST /api/v1/auth/entrar {"email","senha"}` devolve um token Bearer
 (12 h, `SESSAO_HORAS`). O banco guarda só o sha256 do token. Senha com scrypt.
@@ -89,7 +98,36 @@ Login: `POST /api/v1/auth/entrar {"email","senha"}` devolve um token Bearer
   `estado=estornada` mostram as outras. `atrasada` é filtro pela flag (pode
   somar com `parcial`).
 
+## O robô
+
+Um só, no Telegram (decisão de 17/11/2026 — controle de uma pessoa só):
+
+1. Você manda a foto do pedido e a do comprovante, em qualquer ordem. O Claude
+   (`claude-opus-5-5`, saída estruturada, todo campo pode vir nulo) transcreve;
+   o robô casa as duas metades por valor, depois data, depois fornecedor, e
+   nunca chuta: se ficar na dúvida, oferece o botão "Juntar".
+2. Roda as conferências C1..C8 e responde com o rascunho, o lucro e as
+   pendências. No caso da SB (A-01) oferece os dois botões: "Usar itens" e
+   "Usar total".
+3. **Aprovar** é clique seu e passa por todas as validações do lançamento
+   manual. A operação fica com `origem = 'robo'`, e o log registra você como
+   quem aprovou.
+4. Dias úteis às 9h: o que vence hoje e o que está atrasado, com botão "Recebi"
+   em cada duplicata, mais o alerta de dinheiro parado (limite e dias em
+   `parametro`; repete só a cada 7 dias ou se o valor mudar mais de 20%).
+
+A mesma foto duas vezes não é lida de novo (sha256). Mensagens de outros chats
+são ignoradas. Falha de leitura (rede, recusa) vira mensagem para você e não
+grava nada. Recusa do classificador de segurança: a API tenta de novo em outro
+modelo (`fallbacks: "default"`).
+
+Rodar: `python -m caixa_api.robo telegram` (serviço) e `python -m caixa_api.robo
+aviso` (cron). Instalação em [docs/08-deploy.md §7](../docs/08-deploy.md).
+Variáveis: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `TELEGRAM_USUARIO_EMAIL`,
+`ANTHROPIC_API_KEY`.
+
 ## Falta
 
-- Endpoints do robô (`/robo/*`, docs/04-api.md §9 e docs/06-robo.md).
 - Limite de tentativas de login: por enquanto, `limit_req` no Nginx.
+- Testar a leitura com fotos reais: os testes usam um leitor falso; a primeira
+  semana de uso real é que calibra o prompt (ver docs/06-robo.md).
