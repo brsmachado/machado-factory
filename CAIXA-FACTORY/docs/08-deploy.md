@@ -58,6 +58,13 @@ dpkg-reconfigure -plow unattended-upgrades
 `fail2ban` e `unattended-upgrades` não são luxo: uma VPS com IP público leva
 tentativa de invasão na primeira hora de vida.
 
+> **Atalho:** os passos de 2 a 8 estão automatizados em
+> [`deploy/instalar.sh`](../deploy/instalar.sh). Clone o repositório em
+> `/opt/caixa-factory/repo` (deploy key do GitHub, só leitura) e rode
+> `sudo bash /opt/caixa-factory/repo/CAIXA-FACTORY/deploy/instalar.sh caixa.machadoemb.com.br seu@email`.
+> O script pode rodar de novo a cada atualização (`git pull` antes). Ele não mexe
+> no SSH. O banco entra pelo socket local com peer auth, sem senha no `.env`.
+
 ## 3. Banco
 
 ```bash

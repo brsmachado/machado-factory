@@ -8,6 +8,7 @@ from pathlib import Path
 class Config:
     database_url: str
     documentos_dir: Path
+    web_dir: Path = Path(__file__).resolve().parents[2] / "web"   # CAIXA-FACTORY/web
     robo_token: str = ""
     robo_email: str = "robo@caixa.local"
     sessao_horas: int = 12
@@ -29,6 +30,7 @@ class Config:
         return cls(
             database_url=url,
             documentos_dir=Path(os.environ.get("DOCUMENTOS_DIR", "./documentos")).resolve(),
+            web_dir=Path(os.environ.get("WEB_DIR", str(Path(__file__).resolve().parents[2] / "web"))).resolve(),
             robo_token=os.environ.get("ROBO_TOKEN", ""),
             robo_email=os.environ.get("ROBO_EMAIL", "robo@caixa.local"),
             sessao_horas=int(os.environ.get("SESSAO_HORAS", "12")),

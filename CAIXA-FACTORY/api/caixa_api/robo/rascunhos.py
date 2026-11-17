@@ -118,16 +118,17 @@ def _pend(codigo: str, mensagem: str, nivel: str = "aviso", **extra) -> dict:
 def conferir(cur, dados: dict, extraido: dict, correcoes: dict) -> list[dict]:
     pend: list[dict] = []
     p, c = extraido.get("pedido"), extraido.get("comprovante")
-    if not p:
+    # a metade que falta pode ser digitada pelo dono (Corrigir e aprovar, na tela)
+    if not p and not {"numero_pedido", "duplicatas"} <= correcoes.keys():
         pend.append(_pend("falta_pedido", "Falta o pedido de compra: mande a foto da tela do pedido", "erro"))
-    if not c:
+    if not c and not {"valor_pago", "data_pagamento"} <= correcoes.keys():
         pend.append(_pend("falta_comprovante", "Falta o comprovante do PIX: mande a foto ou o PDF", "erro"))
     for cand in extraido.get("_candidatos") or []:
         pend.append(_pend("ambiguo", f"Pode ser a outra metade do rascunho {cand}: se for, junte os dois",
                           "aviso", rascunho_id=cand))
 
-    if p and not dados.get("fornecedor_id"):
-        nome = p.get("fornecedor_nome") or "(sem nome legível)"
+    if not dados.get("fornecedor_id"):
+        nome = (p or {}).get("fornecedor_nome") or (c or {}).get("recebedor_nome") or "(sem nome legível)"
         pend.append(_pend("fornecedor", f"Fornecedor não encontrado no cadastro: {nome}", "erro"))
     for campo, nome in (("numero_pedido", "número do pedido"), ("data_pagamento", "data do PIX"),
                         ("valor_pago", "valor pago"), ("valor_cheio", "valor cheio")):
@@ -457,6 +458,10 @@ def aprovar(cur, arqs: Arquivos, rid: int, mudancas: Optional[dict] = None) -> d
     cur.execute("select id from documento where rascunho_id = %s order by id", (rid,))
     doc_ids = [d["id"] for d in cur.fetchall()]
     d = r["dados"]
+    faltam = [k for k in ("fornecedor_id", "numero_pedido", "data_pagamento", "valor_pago", "valor_cheio",
+                          "duplicatas") if not d.get(k)]
+    if faltam:
+        raise ErroAPI("validacao", "Faltam dados para lançar: " + ", ".join(faltam), {"campos": faltam})
     nova = ops.OperacaoNova(
         fornecedor_id=d["fornecedor_id"], numero_pedido=d["numero_pedido"], numero_nf=d.get("numero_nf"),
         data_pedido=d.get("data_pedido"), data_pagamento=d["data_pagamento"], valor_pago=d["valor_pago"],

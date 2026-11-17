@@ -91,3 +91,23 @@ def test_exportar_movimentos(api):
     linhas = _ler_csv(api.get("/exportar/movimentos.csv").content)
     assert linhas[0] == ["Data", "Tipo", "Valor", "Observacoes"]
     assert linhas[1][:3] == ["16/09/2026", "Aporte", "50000,00"]
+
+
+def test_tela_servida_com_csp(api):
+    r = api.tc.get("/")
+    assert r.status_code == 200 and '<script src="app.js"></script>' in r.text
+    csp = r.headers["content-security-policy"]
+    assert "script-src 'self'" in csp and "frame-ancestors 'self'" in csp
+    assert api.tc.get("/app.js").status_code == 200
+    assert "content-security-policy" not in api.get("/resumo").headers          # a API não leva o CSP da tela
+
+
+def test_historico(api):
+    api.post("/duplicatas/11/receber", json={"data": "2026-11-15"})
+    j = api.get("/eventos", como="leitura", params={"entidade": "duplicata", "limite": 5}).json()
+    e = j["itens"][0]
+    assert (e["entidade"], e["entidade_id"], e["acao"], e["usuario"]) == ("duplicata", 11, "recebeu", "Operador")
+    assert e["antes"]["recebida_em"] is None and e["depois"]["recebida_em"] == "2026-11-15"
+    pag = api.get("/eventos", params={"antes_de": e["id"], "limite": 500}).json()["itens"]
+    assert all(x["id"] < e["id"] for x in pag)
+    assert api.get("/eventos", params={"entidade": "xpto"}).status_code == 422

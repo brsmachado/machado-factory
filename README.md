@@ -6,7 +6,9 @@ Sistemas da Machado Embalagens.
 |---|---|
 | [CAIXA-FACTORY/](CAIXA-FACTORY/) | Especificação técnica do Caixa Factory (docs em `docs/`, página única em `caixa-factory-docs.html`) |
 | [CAIXA-FACTORY/banco/](CAIXA-FACTORY/banco/) | Banco PostgreSQL: migrações, carga inicial e testes |
-| [CAIXA-FACTORY/api/](CAIXA-FACTORY/api/) | API REST (FastAPI): lançamentos, recebimentos, caixa, documentos, CSV |
+| [CAIXA-FACTORY/api/](CAIXA-FACTORY/api/) | API REST (FastAPI) e o robô do Telegram |
+| [CAIXA-FACTORY/web/](CAIXA-FACTORY/web/) | A tela (servida pela própria API em `/`) |
+| [CAIXA-FACTORY/deploy/](CAIXA-FACTORY/deploy/) | `instalar.sh`: instala e atualiza na VPS |
 | [CAIXA-MACHADO/](CAIXA-MACHADO/) | Sistema em uso hoje (`sistema/caixa-machado.html`) e registros em CSV |
 
 Para regenerar a página da documentação depois de editar os `.md`:

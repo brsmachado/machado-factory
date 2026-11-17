@@ -3,7 +3,9 @@
 FastAPI + psycopg 3, SQL direto sobre as views do banco (sem ORM). Implementa
 [docs/04-api.md](../docs/04-api.md) inteira, mais o robô de
 [docs/06-robo.md](../docs/06-robo.md). Base: `/api/v1`.
-Documentação interativa em `/api/v1/docs`.
+Documentação interativa em `/api/v1/docs`. A tela (`CAIXA-FACTORY/web/`) é
+servida pela própria API em `/`, no mesmo endereço, com CSP que só aceita script
+do próprio servidor.
 
 ```
 api/
@@ -53,7 +55,7 @@ PGHOST=localhost PGUSER=postgres venv/bin/python -m pytest testes
 ```
 
 Cria um banco-modelo com as migrações, a carga real de 19/10/2026 e quatro
-usuários; cada teste roda numa cópia nova dele. 75 testes: os números de
+usuários; cada teste roda numa cópia nova dele. 77 testes: os números de
 conferência pela API, cada validação na ordem da especificação, idempotência,
 recebimento em lote (tudo ou nada), documentos (nome, tipo real, duplicado,
 renomear e desfazer), CSV contra a planilha atual, login e permissões, e o
@@ -128,6 +130,6 @@ Variáveis: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `TELEGRAM_USUARIO_EMAIL`,
 
 ## Falta
 
-- Limite de tentativas de login: por enquanto, `limit_req` no Nginx.
+- Limite de tentativas de login: fica no Nginx (`limit_req`, 10 por minuto, já no `deploy/instalar.sh`).
 - Testar a leitura com fotos reais: os testes usam um leitor falso; a primeira
   semana de uso real é que calibra o prompt (ver docs/06-robo.md).
